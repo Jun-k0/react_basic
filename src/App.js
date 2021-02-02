@@ -2,74 +2,102 @@ import React from "react";
 import axios from "axios";
 import Movie from "./Movie"
 
+
 class App extends React.Component{
   state={
     isLoading:true,
     movies:[],
-    index:true,
     date:''
   }
+  componentDidMount(){
+    this.searchMovies("");
+  }
+  searchMovies(date){
+    if(date===""){
+      console.log(date);
+      this.setState({isLoading:false,movies:[]});
+    }
+    else{
+      axios.get(`https://kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json?key=7505633b57c0264a95d188319bfc3798&targetDt=${date}`)
+      .then(movie=>{
+        console.log(movie);
+        this.setState({
+          movies:movie.data.boxOfficeResult.dailyBoxOfficeList, 
+          isLoading:false,
+          date:date
+        });
+        console.log(movie.data.boxOfficeResult.dailyBoxOfficeList);
+      })
+      }
+  }
   submit=(e)=>{
+    e.preventDefault(); // 페이지 리로드 막아줌 이거때메 안됐음
     const date=e.target.date.value;
     console.log(date);
-    this.setState({date:date});
+    this.searchMovies(date);
   }
-  getmovies=()=>{ // XHR failed loading: GET ???
-    axios.get("https://kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json?key=7505633b57c0264a95d188319bfc3798&targetDt=20120101")
-    .then(movie=>{
-      console.log(movie);
-      this.setState({
-        index:false,
-        movies:movie.data.boxOfficeResult.dailyBoxOfficeList, 
-        isLoading:false
-      });
-      console.log(movie.data.boxOfficeResult.dailyBoxOfficeList);
-    })
-    .catch((error)=>{
-      if (error.response) {
-        // 요청이 이루어졌으며 서버가 2xx의 범위를 벗어나는 상태 코드로 응답했습니다.
-        console.log(error.response.data);
-        console.log(error.response.status);
-        console.log(error.response.headers);
-      }
-      else if (error.request) {
-        // 요청이 이루어 졌으나 응답을 받지 못했습니다.
-        // `error.request`는 브라우저의 XMLHttpRequest 인스턴스 또는
-        // Node.js의 http.ClientRequest 인스턴스입니다.
-        console.log(error.request);
-      }
-      else {
-        // 오류를 발생시킨 요청을 설정하는 중에 문제가 발생했습니다.
-        console.log('Error', error.message);
-      }
-      console.log(error.config);
-    }
-
+  render(){
+    const { isLoading,movies } = this.state;
+    return(
+      <section>
+        {isLoading?"Loading...":(
+           <form onSubmit={this.submit}>
+            <input type="text" placeholder="궁금한 날 ex)20210129" name="date"/>
+            <button>검색</button>
+            <div>
+              {
+                movies.map(movie=>{
+                console.log(movie.movieNm);
+                return(
+                  <Movie 
+                    title={movie.movieNm}
+                    key={movie.rank}
+                    cntPeople={movie.audiCnt}
+                  /> 
+                );
+              })
+              }
+            </div>
+           </form>
+           
+        )}
+      </section>
     );
   }
-  componentDidUpdate(){
+}
+/*
+class App extends React.Component{
+  state={
+    isLoading:true,
+    movies:[]
+  }
+  getmovies=async()=>{
+    const movie=await axios.get("https://kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json?key=7505633b57c0264a95d188319bfc3798&targetDt=20120101");
+    console.log(movie.data.boxOfficeResult.dailyBoxOfficeList);
+    this.setState({isLoading:false,movies:movie.data.boxOfficeResult.dailyBoxOfficeList});
+  }
+  componentDidMount(){
     this.getmovies();
   }
   render(){
-    const { isLoading,movies,index } = this.state;
+    const {isLoading,movies}=this.state;
     return(
       <div>
-        <form onSubmit={this.submit}>
-          <input type="text" placeholder="궁금한 날 ex)20210129" name="date"/>
-          <input type="submit"/>
-        </form>
-        {index?"Main Page":
-          movies.map(movie=>
-            <Movie
+        {isLoading ? "Loading..": 
+          movies.map(movie=>{
+            console.log(movie.movieNm);
+            return(
+            <Movie 
               title={movie.movieNm}
               key={movie.rank}
               cntPeople={movie.audiCnt}
-            />
-          )
+            /> 
+            );
+          })
         }
       </div>
     );
   }
 }
-
+*/
 export default App;

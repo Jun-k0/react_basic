@@ -18,7 +18,7 @@ class App extends React.Component{
       this.setState({isLoading:false,movies:[]});
     }
     else{
-      axios.get(`https://kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json?key=7505633b57c0264a95d188319bfc3798&targetDt=${date}`)
+      axios.get(`https://kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json?key=개인키&targetDt=${date}`)
       .then(movie=>{
         console.log(movie);
         this.setState({
